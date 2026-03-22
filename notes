@@ -1,0 +1,41 @@
+User types input
+        │
+        ▼
+     Lexer → token list (WORD, PIPE, REDIR, HEREDOC)
+        │
+        ▼
+    Parser → t_cmd linked list
+        │
+        ▼
+  Executor → fork(), execve(), dup2() for redirections/pipes
+----------------------------------------------------------------------  
+  if TOKEN_WORD        → add to argv
+if TOKEN_PIPE        → create new command
+if REDIRECTION       → handle_redirection()
+----------------------------------------------------------------------
+if (*expect != TOKEN_NONE)
+{
+    *expect = TOKEN_NONE;
+    skip token;
+}
+else
+{
+    add_args_cmd(current, token->value);
+}
+👉 If a WORD comes after < > >> <<, it is not an argument → skip it
+---------------------------------------------------------------------
+current = handle_pipe_token(current, cmds);
+
+👉 Ends current command → creates current->next
+
+*expect = token->type;
+handle_redirection(current, token, last_exit);
+👉 Calls correct handler and sets expect to skip next WORD
+
+---------------------------------------------------------
+👉 This is a control flag
+
+TOKEN_NONE = normal parsing
+TOKEN_REDIR_IN = next WORD is infile
+TOKEN_REDIR_OUT = next WORD is outfile
+TOKEN_HEREDOC = next WORD is delimiter
